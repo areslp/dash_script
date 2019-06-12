@@ -37,6 +37,36 @@ def CreateScatterGraph(df, columns, title, axis_labels, base_time):
     return graph
 
 
+def CreateSequenceScatterGraph(df, columns, segments, title, axis_labels, base_time):
+    graph = dcc.Graph(
+        id=title,
+        figure=go.Figure(
+            data=[
+                go.Scattergl(
+                    x=df['first_frame_timestamp']-base_time,
+                    y=df[df.segment == segment][column],
+                    text=df['first_frame_timestamp'],
+                    mode='lines+markers',
+                    name=column + '_' + str(segment),
+                    hoverinfo='y+text+name',
+                    hoverlabel={'namelength': -1},
+                    line={'width': 1},
+                    marker={'size': 2},
+                    opacity=0.7
+                ) for segment in segments for column in columns
+            ],
+
+            layout=go.Layout(
+                title=title,
+                showlegend=True,
+                xaxis={'title': axis_labels[0]},
+                yaxis={'title': axis_labels[1]}
+            )
+        )
+    )
+    return graph
+
+
 def CreateBoxGraph(df, columns, title, axis_label):
     graph = dcc.Graph(
         id=title,
