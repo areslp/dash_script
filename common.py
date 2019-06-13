@@ -7,6 +7,37 @@ import plotly.graph_objs as go
 import numpy
 import plotly as py
 
+
+def CreateTrajectory(df, columns, title):
+    graph = dcc.Graph(
+        id=title,
+        figure=go.Figure(
+            data=[
+                go.Scattergl(
+                    x=df[columns[0]],
+                    y=df[columns[1]],
+                    text=df['time'],
+                    mode='lines+markers',
+                    name='',
+                    hoverinfo='y+text+name',
+                    hoverlabel={'namelength': -1},
+                    line={'width': 1},
+                    marker={'size': 2},
+                    opacity=0.7
+                )
+            ],
+
+            layout=go.Layout(
+                title=title,
+                showlegend=True,
+                xaxis={'title': 'x(m)'},
+                yaxis={'title': 'y(m)'}
+            )
+        )
+    )
+    return graph
+
+
 def CreateScatterGraph(df, columns, title, axis_labels, base_time):
     graph = dcc.Graph(
         id=title,
