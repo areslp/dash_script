@@ -8,7 +8,7 @@ import numpy
 import plotly as py
 
 
-def CreateTrajectory(df, columns, title):
+def CreateTrajectory(df, groups, title):
     graph = dcc.Graph(
         id=title,
         figure=go.Figure(
@@ -17,14 +17,14 @@ def CreateTrajectory(df, columns, title):
                     x=df[columns[0]],
                     y=df[columns[1]],
                     text=df['time'],
-                    mode='lines+markers',
+                    mode='lines',
                     name='',
                     hoverinfo='y+text+name',
                     hoverlabel={'namelength': -1},
                     line={'width': 1},
                     marker={'size': 2},
                     opacity=0.7
-                )
+                ) for columns in groups
             ],
 
             layout=go.Layout(
@@ -47,7 +47,7 @@ def CreateScatterGraph(df, columns, title, axis_labels, base_time):
                     x=df['time']-base_time,
                     y=df[column],
                     text=df['time'],
-                    mode='lines+markers',
+                    mode='lines',
                     name=column,
                     hoverinfo='y+text+name',
                     hoverlabel={'namelength': -1},
@@ -77,7 +77,7 @@ def CreateSequenceScatterGraph(df, columns, segments, title, axis_labels, base_t
                     x=df['first_frame_timestamp']-base_time,
                     y=df[df.segment == segment][column],
                     text=df['first_frame_timestamp'],
-                    mode='lines+markers',
+                    mode='lines',
                     name=column + '_' + str(segment),
                     hoverinfo='y+text+name',
                     hoverlabel={'namelength': -1},
@@ -98,6 +98,31 @@ def CreateSequenceScatterGraph(df, columns, segments, title, axis_labels, base_t
     return graph
 
 
+    
+def CreateSequenceBoxGraph(df, columns, segments, title, axis_label):
+    graph = dcc.Graph(
+        id=title,
+        figure=go.Figure(
+            data=[
+                go.Box(
+                    y=df[df.segment == segment][column],
+                    name=column + '_' + str(segment),
+                    opacity=0.7,
+                    hoverlabel={'namelength': -1},
+                    boxmean='sd'
+                ) for segment in segments for column in columns
+            ],
+
+            layout=go.Layout(
+                title=title,
+                showlegend=True,
+                xaxis={'title': axis_label},
+            )
+        )
+    )
+    return graph
+
+
 def CreateBoxGraph(df, columns, title, axis_label):
     graph = dcc.Graph(
         id=title,
@@ -107,6 +132,7 @@ def CreateBoxGraph(df, columns, title, axis_label):
                     y=df[column],
                     name=column,
                     opacity=0.7,
+                    hoverlabel={'namelength': -1},
                     boxmean='sd'
                 ) for column in columns
             ],
