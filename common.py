@@ -31,7 +31,7 @@ def CreateTrajectory(df, groups, title):
                 title=title,
                 showlegend=True,
                 xaxis={'title': 'x(m)'},
-                yaxis={'title': 'y(m)'}
+                yaxis={'title': 'y(m)', 'scaleanchor': "x", 'scaleratio': 1}
             )
         )
     )
