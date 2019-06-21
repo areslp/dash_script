@@ -11,47 +11,59 @@ import common as holo
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-df = pd.read_csv('data/fusion/absolute_error.csv')
-print(df.head())
+abs = pd.read_csv('data/fusion/absolute_error.csv') # df
+print(abs.head())
 # print(df.iloc[5]['trans_error']) # 1.601726
-base_timestamp = df.iloc[0]['time']
+base_timestamp = abs.iloc[0]['time']
 print(base_timestamp)
-print(len(df))
+print(len(abs.index))
 
-df2 = pd.read_csv('data/fusion/sequence_error.csv')
-print(df2.head())
-print(len(df2))
+seq = pd.read_csv('data/fusion/sequence_error.csv') # df2
+print(seq.head())
+print(len(seq.index))
 
-df3 = pd.read_csv('data/fusion/trajectories.csv')
-print(df3.head())
-print(len(df3))
+traj = pd.read_csv('data/fusion/trajectories.csv') # df3
+print(traj.head())
+print(len(traj.index))
 
-df4 = pd.read_csv('data/fusion/sequence_covariance_error.csv')
+df4 = pd.read_csv('data/fusion/sequence_covariance_error.csv') # df4
 print(df4.head())
 print(len(df4))
 
-lon_trans = df['x_error'].to_numpy()
+lon_trans = abs['x_error'].to_numpy()
 # print(np.mean(lon_trans))
 # print(np.std(lon_trans))
 # print(np.median(lon_trans))
 # print(np.max(lon_trans))
 # print(np.min(lon_trans))
 
-lat_trans = df['y_error'].to_numpy()
-trans = df['trans_error'].to_numpy()
-yaw = df['yaw_error'].to_numpy()
-rot = df['rot_error'].to_numpy()
-sequence_trans = df2['trans_error'].to_numpy()
-sequence_rot = df2['rot_error'].to_numpy()
+lat_trans = abs['y_error'].to_numpy()
+trans = abs['trans_error'].to_numpy()
+yaw = abs['yaw_error'].to_numpy()
+rot = abs['rot_error'].to_numpy()
+sequence_trans = seq['trans_error'].to_numpy()
+sequence_rot = seq['rot_error'].to_numpy()
 
 test = pd.read_csv('solar.csv')
 data = test.to_dict('records')
 print(data)
 
+df = abs
+df2 = seq
+df3 = traj
+
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
     html.H1(children='Holo MLC Evaluation'),
+
+    dcc.Slider(
+        id='overall_slider',
+        min=0.0,
+        max=1.0,
+        step=0.1,
+        value=1.0,
+    ),
 
     html.Div(children=[
         html.H2('Trajectory', style={'textAlign': 'center'}),
@@ -134,13 +146,13 @@ app.layout = html.Div(children=[
                     np.mean(yaw**2)), 'rot': np.sqrt(np.mean(rot**2)), 'sequence_trans': np.sqrt(np.mean(sequence_trans**2)), 'sequence_rot': np.sqrt(np.mean(sequence_rot**2))},
             ],
             style_header={
-                #'backgroundColor': 'green',
+                # 'backgroundColor': 'green',
                 'fontWeight': 'bold'
             },
             style_cell_conditional=[
                 {
                     'if': {'column_id': ''},
-                    #'backgroundColor': 'red',
+                    # 'backgroundColor': 'red',
                     'fontWeight': 'bold'
                 }
             ],
