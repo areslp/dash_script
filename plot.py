@@ -44,73 +44,82 @@ rot = df['rot_error'].to_numpy()
 sequence_trans = df2['trans_error'].to_numpy()
 sequence_rot = df2['rot_error'].to_numpy()
 
-test = pd.read_csv('solar.csv')
-data = test.to_dict('records')
-print(data)
-
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
     html.H1(children='Holo MLC Evaluation'),
+    html.H2(children='Absolute Evaluation'),
+
+    dcc.Checklist(
+        id='overall_checkbox',
+        options=[
+            {'label': 'Trajectory', 'value': 'T'},
+            {'label': 'Absolute error', 'value': 'A'},
+            {'label': 'Absolute box error', 'value': 'AB'},
+            {'label': 'Velocity error', 'value': 'V'},
+            {'label': 'Velocity box error', 'value': 'VB'},
+        ],
+        values=['T', 'AB', 'VB'],
+        labelStyle={'display': 'inline-block'}
+    ),
 
     html.Div(children=[
-        html.H2('Trajectory', style={'textAlign': 'center'}),
-        holo.CreateTrajectory(
-            df3, [['gt_x', 'gt_y'], ['es_x', 'es_y']], 'Trajectory(UTM)'),
+        html.Div(id='trajectory_container'),
     ]),
 
     html.Div(children=[
-        html.H2('Absolute Error', style={'textAlign': 'center'}),
-        holo.CreateScatterGraph(df, ['trans_error', 'horizon_trans_error', 'z_error'],
-                                'Translation Error', ['time(s)', 'error(m)'], base_timestamp),
-        holo.CreateScatterGraph(df, ['x_error', 'y_error'], 'Longitudinal & Laterl Error', [
-            'time(s)', 'error(m)'], base_timestamp),
-        holo.CreateScatterGraph(df, ['rot_error', 'roll_error', 'pitch_error', 'yaw_error'], 'Rotation Error', [
-            'time(s)', 'error(deg)'], base_timestamp)
+        html.Div(id='absolute_container'),
     ]),
 
     html.Div(children=[
-        html.H2('Absolute Box Error', style={'textAlign': 'center'}),
-        holo.CreateBoxGraph(df, ['rot_error', 'roll_error', 'pitch_error',
-                                 'yaw_error'], 'Rotation Box Error', 'error(deg)'),
-        holo.CreateBoxGraph(df, ['trans_error', 'horizon_trans_error', 'z_error',
-                                 'x_error', 'y_error'], 'Translation Box Error', 'error(m)')
+        html.Div(id='absolute_box_container'),
     ]),
 
     html.Div(children=[
-        html.H2('Velocity Error', style={'textAlign': 'center'}),
-        holo.CreateScatterGraph(df, ['velx_enu_error', 'vely_enu_error', 'velz_enu_error'],
-                                'ENU Velocity Error', ['time(s)', 'error(m/s)'], base_timestamp),
-        holo.CreateScatterGraph(df, ['velx_body_error', 'vely_body_error', 'velz_body_error'],
-                                'Body Velocity Error', ['time(s)', 'error(m/s)'], base_timestamp),
-        holo.CreateScatterGraph(df, ['roll_vel_error', 'pitch_vel_error', 'yaw_vel_error'],
-                                'Angular Velocity Error', ['time(s)', 'error(deg/s)'], base_timestamp),
+        html.Div(id='velocity_container'),
     ]),
 
     html.Div(children=[
-        html.H2('Velocity Box Error', style={'textAlign': 'center'}),
-        holo.CreateBoxGraph(df, ['velx_enu_error', 'vely_enu_error',
-                                 'velz_enu_error'], 'ENU Velocity Box Error', 'error(m/s)'),
-        holo.CreateBoxGraph(df, ['velx_body_error', 'vely_body_error',
-                                 'velz_body_error'], 'Body Velocity Box Error', 'error(m/s)'),
-        holo.CreateBoxGraph(df, ['roll_vel_error', 'pitch_vel_error',
-                                 'yaw_vel_error'], 'Angular Velocity Box Error', 'error(deg/s)'),
+        html.Div(id='velocity_box_container'),
+    ]),
+
+    html.H2(children='Sequence Evaluation'),
+
+    dcc.Checklist(
+        id='sequence_checkbox',
+        options=[
+            {'label': 'Sequence translation error', 'value': 'ST'},
+            {'label': 'Sequence rotation error', 'value': 'SR'},
+            {'label': 'Sequence box error', 'value': 'SB'},
+        ],
+        values=['SB'],
+        labelStyle={'display': 'inline-block'}
+    ),
+
+    html.P('Please select segment length : '),
+    dcc.Dropdown(
+        id='segment_dropdown',
+        options=[
+            {'label': '100', 'value': 100},
+            {'label': '200', 'value': 200},
+            {'label': '300', 'value': 300},
+            {'label': '400', 'value': 400},
+            {'label': '500', 'value': 500},
+            {'label': '600', 'value': 600},
+            {'label': '700', 'value': 700},
+            {'label': '800', 'value': 800},
+        ],
+        multi=True,
+        value=[100]
+    ),
+
+    html.Div(children=[
+        html.Div(id='sequence_translation_graph_container'),
+        html.Div(id='sequence_rotation_graph_container'),
     ]),
 
     html.Div(children=[
-        html.H2('Sequence Error', style={'textAlign': 'center'}),
-        holo.CreateSequenceScatterGraph(df2, ['trans_error', 'pure_x_error', 'pure_y_error', 'pure_z_error'],
-                                        [100], 'Sequence Translation Error', ['time(s)', 'error(m/m)'], base_timestamp),
-        holo.CreateSequenceScatterGraph(df2, ['rot_error', 'roll_error', 'pitch_error', 'yaw_error'],
-                                        [100], 'Sequence Rotation Error', ['time(s)', 'error(deg/m)'], base_timestamp),
-    ]),
-
-    html.Div(children=[
-        html.H2('Sequence Box Error', style={'textAlign': 'center'}),
-        holo.CreateSequenceBoxGraph(df2, ['trans_error', 'pure_x_error', 'pure_y_error', 'pure_z_error'],
-                                    [100, 200, 300, 400, 500, 600, 700, 800], 'Sequence Translation Box Error', 'error(m/m)'),
-        holo.CreateSequenceBoxGraph(df2, ['rot_error', 'roll_error', 'pitch_error', 'yaw_error'],
-                                    [100, 200, 300, 400, 500, 600, 700, 800], 'Sequence Rotation Box Error', 'error(deg/m)'),
+        html.Div(id='sequence_box_container'),
     ]),
 
     html.Div(children=[
@@ -134,20 +143,145 @@ app.layout = html.Div(children=[
                     np.mean(yaw**2)), 'rot': np.sqrt(np.mean(rot**2)), 'sequence_trans': np.sqrt(np.mean(sequence_trans**2)), 'sequence_rot': np.sqrt(np.mean(sequence_rot**2))},
             ],
             style_header={
-                #'backgroundColor': 'green',
+                # 'backgroundColor': 'green',
                 'fontWeight': 'bold'
             },
             style_cell_conditional=[
                 {
                     'if': {'column_id': ''},
-                    #'backgroundColor': 'red',
+                    # 'backgroundColor': 'red',
                     'fontWeight': 'bold'
                 }
             ],
         ),
     ]),
-
 ])
+
+
+@app.callback(
+    dash.dependencies.Output(
+        'sequence_translation_graph_container', 'children'),
+    [dash.dependencies.Input('segment_dropdown', 'value'),
+     dash.dependencies.Input('sequence_checkbox', 'values')])
+def update_translation_graph(value, values):
+    if 'ST' in values:
+        return [
+            html.H2('Sequence Translation Error',
+                    style={'textAlign': 'center'}),
+            holo.CreateSequenceScatterGraph(df2, ['trans_error', 'pure_x_error', 'pure_y_error', 'pure_z_error'],
+                                            value, 'Sequence Translation Error', ['time(s)', 'error(m)'], base_timestamp),
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output('sequence_rotation_graph_container', 'children'),
+    [dash.dependencies.Input('segment_dropdown', 'value'),
+     dash.dependencies.Input('sequence_checkbox', 'values')])
+def update_rotation_graph(value, values):
+    if 'SR' in values:
+        return [
+            html.H2('Sequence Rotation Error',
+                    style={'textAlign': 'center'}),
+            holo.CreateSequenceScatterGraph(df2, ['rot_error', 'roll_error', 'pitch_error', 'yaw_error'],
+                                            value, 'Sequence Rotation Error', ['time(s)', 'error(deg/m)'], base_timestamp),
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output('sequence_box_container', 'children'),
+    [dash.dependencies.Input('segment_dropdown', 'value'),
+     dash.dependencies.Input('sequence_checkbox', 'values')])
+def update_sequence_box_graph(value, values):
+    if 'SB' in values:
+        return [
+            html.H2('Sequence Box Error', style={'textAlign': 'center'}),
+            holo.CreateSequenceBoxGraph(df2, ['trans_error', 'pure_x_error', 'pure_y_error', 'pure_z_error'],
+                                        value, 'Sequence Translation Box Error', 'error(m/m)'),
+            holo.CreateSequenceBoxGraph(df2, ['rot_error', 'roll_error', 'pitch_error', 'yaw_error'],
+                                        value, 'Sequence Rotation Box Error', 'error(deg/m)'),
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output(
+        'absolute_container', 'children'),
+    [dash.dependencies.Input('overall_checkbox', 'values')])
+def update_absolute_graph(value):
+    if 'A' in value:
+        return [
+            html.H2('Absolute Error', style={'textAlign': 'center'}),
+            holo.CreateScatterGraph(df, ['trans_error', 'horizon_trans_error', 'z_error'],
+                                    'Translation Error', ['time(s)', 'error(m)'], base_timestamp),
+            holo.CreateScatterGraph(df, ['x_error', 'y_error'], 'Longitudinal & Laterl Error', [
+                'time(s)', 'error(m)'], base_timestamp),
+            holo.CreateScatterGraph(df, ['rot_error', 'roll_error', 'pitch_error', 'yaw_error'], 'Rotation Error', [
+                'time(s)', 'error(deg)'], base_timestamp),
+            holo.CreateSequenceScatterGraph(df2, ['trans_error', 'pure_x_error', 'pure_y_error', 'pure_z_error'],
+                                            value, 'Sequence Translation Error', ['time(s)', 'error(m)'], base_timestamp),
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output(
+        'trajectory_container', 'children'),
+    [dash.dependencies.Input('overall_checkbox', 'values')])
+def update_trajectory_graph(value):
+    if 'T' in value:
+        return [
+            html.H2('Trajectory', style={'textAlign': 'center'}),
+            holo.CreateTrajectory(
+                df3, [['gt_x', 'gt_y'], ['es_x', 'es_y']], 'Trajectory(UTM)'),
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output(
+        'absolute_box_container', 'children'),
+    [dash.dependencies.Input('overall_checkbox', 'values')])
+def update_absolute_box_graph(value):
+    if 'AB' in value:
+        return [
+            html.H2('Absolute Box Error', style={'textAlign': 'center'}),
+            holo.CreateBoxGraph(df, ['rot_error', 'roll_error', 'pitch_error',
+                                     'yaw_error'], 'Rotation Box Error', 'error(deg)'),
+            holo.CreateBoxGraph(df, ['trans_error', 'horizon_trans_error', 'z_error',
+                                     'x_error', 'y_error'], 'Translation Box Error', 'error(m)')
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output(
+        'velocity_container', 'children'),
+    [dash.dependencies.Input('overall_checkbox', 'values')])
+def update_velocity_graph(value):
+    if 'V' in value:
+        return [
+            html.H2('Velocity Error', style={'textAlign': 'center'}),
+            holo.CreateScatterGraph(df, ['velx_enu_error', 'vely_enu_error', 'velz_enu_error'],
+                                    'ENU Velocity Error', ['time(s)', 'error(m/s)'], base_timestamp),
+            holo.CreateScatterGraph(df, ['velx_body_error', 'vely_body_error', 'velz_body_error'],
+                                    'Body Velocity Error', ['time(s)', 'error(m/s)'], base_timestamp),
+            holo.CreateScatterGraph(df, ['roll_vel_error', 'pitch_vel_error', 'yaw_vel_error'],
+                                    'Angular Velocity Error', ['time(s)', 'error(deg/s)'], base_timestamp),
+        ]
+
+
+@app.callback(
+    dash.dependencies.Output(
+        'velocity_box_container', 'children'),
+    [dash.dependencies.Input('overall_checkbox', 'values')])
+def update_velocity_box_graph(value):
+    if 'VB' in value:
+        return [
+            html.H2('Velocity Box Error', style={'textAlign': 'center'}),
+            holo.CreateBoxGraph(df, ['velx_enu_error', 'vely_enu_error',
+                                     'velz_enu_error'], 'ENU Velocity Box Error', 'error(m/s)'),
+            holo.CreateBoxGraph(df, ['velx_body_error', 'vely_body_error',
+                                     'velz_body_error'], 'Body Velocity Box Error', 'error(m/s)'),
+            holo.CreateBoxGraph(df, ['roll_vel_error', 'pitch_vel_error',
+                                     'yaw_vel_error'], 'Angular Velocity Box Error', 'error(deg/s)'),
+        ]
+
 
 if __name__ == '__main__':
     app.run_server(debug=False)
